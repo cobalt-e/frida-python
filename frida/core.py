@@ -9,6 +9,7 @@ import sys
 import threading
 import traceback
 import warnings
+import base64
 from types import TracebackType
 from typing import (
     Any,
@@ -494,9 +495,16 @@ class Script:
             self._next_request_id += 1
             self._pending[request_id] = callback
         return request_id
+    
+    def get_rpc_string(quote):
+        result = base64.b64decode(base64.b64decode("Wm5KcFpHRTZjbkJq").decode('utf-8')).decode('utf-8')
+        if quote:
+            return '"' + result + '"'
+        else:
+            return result 
 
     def _send_rpc_call(self, request_id: int, *args: Any) -> None:
-        message = ["frida:rpc", request_id]
+        message = [self.get_rpc_string(False), request_id]
         message.extend(args)
         self.post(message)
 
@@ -538,7 +546,7 @@ class Script:
             level = message["level"]
             text = payload
             self._log_handler(level, text)
-        elif mtype == "send" and isinstance(payload, list) and len(payload) > 0 and payload[0] == "frida:rpc":
+        elif mtype == "send" and isinstance(payload, list) and len(payload) > 0 and payload[0] == self.get_rpc_string(False):
             request_id = payload[1]
             operation = payload[2]
             params = payload[3:]
